@@ -14,7 +14,8 @@ GameObject:
   - component: {fileID: 3134584532390730386}
   - component: {fileID: 8304755508470594258}
   - component: {fileID: 5022093264109083865}
-  - component: {fileID: 6697973062967478117}
+  - component: {fileID: 7115176428100302705}
+  - component: {fileID: 3042597318395191811}
   m_Layer: 0
   m_Name: Zombie_Big
   m_TagString: Untagged
@@ -202,7 +203,20 @@ MonoBehaviour:
   stopDistance: 0.4
   detectCollider: {fileID: 0}
   detectOffsetDistance: 1
---- !u!95 &6697973062967478117
+--- !u!114 &7115176428100302705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4806158716662537208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b76c4c1703bb34345a3188954cfba45f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 10
+--- !u!95 &3042597318395191811
 Animator:
   serializedVersion: 5
   m_ObjectHideFlags: 0
