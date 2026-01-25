@@ -221,6 +221,7 @@ GameObject:
   - component: {fileID: 288094156}
   - component: {fileID: 288094158}
   - component: {fileID: 288094159}
+
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -486,6 +487,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+
 --- !u!114 &288094159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -500,6 +502,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHP: 100
   currentHP: 0
+
 --- !u!1 &476180897
 GameObject:
   m_ObjectHideFlags: 0
