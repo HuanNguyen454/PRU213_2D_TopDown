@@ -8,7 +8,8 @@ public class Player_Health : MonoBehaviour
     [SerializeField] private int maxHP = 100;
 
     [SerializeField] private int currentHP;   // ?ây m?i là cái Unity serialize ???c
-    public int CurrentHP => currentHP;        // property ch? ??c
+    public int CurrentHP => currentHP;
+    public int MaxHP => maxHP;
 
     public bool IsDead => currentHP <= 0;
 
