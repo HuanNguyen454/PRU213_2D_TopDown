@@ -50,7 +50,7 @@ TagManager:
   - name: Collision
     uniqueID: 707008155
     locked: 0
-  - name: Player
+  - name: Character
     uniqueID: 3513662081
     locked: 0
   - name: WalkBehind
