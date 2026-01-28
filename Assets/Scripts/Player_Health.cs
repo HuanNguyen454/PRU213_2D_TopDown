@@ -1,18 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System;
 public class Player_Health : MonoBehaviour
 {
     [Header("Health")]
     [SerializeField] private int maxHP = 100;
 
-    [SerializeField] private int currentHP;   // ?ây m?i là cái Unity serialize ???c
+    [SerializeField] private int currentHP;   // ?ï¿½y m?i lï¿½ cï¿½i Unity serialize ???c
     public int CurrentHP => currentHP;
     public int MaxHP => maxHP;
 
     public bool IsDead => currentHP <= 0;
-
+    public event Action OnDied;
     private void Awake()
     {
         currentHP = maxHP;
@@ -42,7 +42,7 @@ public class Player_Health : MonoBehaviour
     private void Die()
     {
         Debug.Log("Player died!");
-
+        OnDied?.Invoke();
         // d?ng chuy?n ??ng
         var rb = GetComponent<Rigidbody2D>();
         if (rb != null) rb.velocity = Vector2.zero;
