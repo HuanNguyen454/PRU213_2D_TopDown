@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -10,8 +11,16 @@ public class ZombieChase : MonoBehaviour
     [SerializeField] private float stopDistance = 0.4f;
 
     [Header("Detect Zone (Circle Trigger)")]
-    [SerializeField] private CircleCollider2D detectCollider; // CircleCollider2D (Is Trigger)
-    [SerializeField] private float detectOffsetDistance = 1.0f; // vùng quét n?m tr??c m?t bao xa
+    [SerializeField] private CircleCollider2D detectCollider; // Is Trigger
+    [SerializeField] private float detectOffsetDistance = 1.0f;
+
+    [Header("Attack")]
+    [SerializeField] private float attackRange = 1.5f;
+    [SerializeField] private float attackCooldown = 1.0f;
+    [SerializeField] private float attackWindup = 0.35f;   // ? d?ng 1 nh?p tr??c khi ?ánh
+    [SerializeField] private int damage = 10;
+    [SerializeField] private LayerMask playerLayer;
+    [SerializeField] private float hitRadius = 0.8f;
 
     private Rigidbody2D rb;
     private Animator anim;
@@ -20,10 +29,16 @@ public class ZombieChase : MonoBehaviour
     private Transform target;
     private bool isChasing;
 
-    // V?i side-walk: m?c ??nh nhìn sang ph?i, và ch? c?n trái/ph?i
     private Vector2 facingDir = Vector2.right;
 
+    private bool isAttacking;
+    private float nextAttackTime;
+
+    private bool isWindingUp;        // ? ?ang “l?y ?à” tr??c khi ?ánh
+    private float windupEndTime;     // ? khi nào h?t l?y ?à
+
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
+    private static readonly int AttackHash = Animator.StringToHash("Attack");
 
     private void Awake()
     {
@@ -34,67 +49,124 @@ public class ZombieChase : MonoBehaviour
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
 
-        // N?u b?n quên kéo detectCollider, t? tìm CircleCollider2D trên object
         if (detectCollider == null) detectCollider = GetComponent<CircleCollider2D>();
-
-        ApplyDetectOffset(); // m?c ??nh vùng quét bên ph?i
+        ApplyDetectOffset();
     }
 
     private void FixedUpdate()
     {
         if (!isChasing || target == null)
         {
-            Stop();
+            StopMove();
+            isWindingUp = false; // reset
+            return;
+        }
+
+        // ? ?ang Attack => ??ng yên
+        if (isAttacking)
+        {
+            StopMove();
             return;
         }
 
         Vector2 toTarget = (Vector2)target.position - rb.position;
         float dist = toTarget.magnitude;
 
+        UpdateFacing(toTarget);
+
+        // ? trong t?m ?ánh
+        if (dist <= attackRange)
+        {
+            StopMove();
+
+            // n?u ch?a t?i cooldown thì thôi
+            if (Time.time < nextAttackTime)
+                return;
+
+            // B?t ??u windup n?u ch?a windup
+            if (!isWindingUp)
+            {
+                isWindingUp = true;
+                windupEndTime = Time.time + attackWindup;
+                return;
+            }
+
+            // N?u Player ch?y ra kh?i t?m trong lúc windup thì h?y (hit&run)
+            if (dist > attackRange)
+            {
+                isWindingUp = false;
+                return;
+            }
+
+            // H?t windup => ?ánh
+            if (Time.time >= windupEndTime)
+            {
+                isWindingUp = false;
+                isAttacking = true;
+
+                nextAttackTime = Time.time + attackCooldown;
+
+                if (anim != null) anim.SetTrigger(AttackHash);
+            }
+
+            return;
+        }
+        else
+        {
+            // ra kh?i t?m ?ánh thì h?y windup
+            isWindingUp = false;
+        }
+
         if (dist <= stopDistance)
         {
-            Stop();
+            StopMove();
             return;
         }
 
         Vector2 dir = toTarget.normalized;
-
-        // Side-walk: ch? update h??ng theo tr?c X (trái/ph?i)
-        UpdateFacing(dir);
-
         rb.velocity = dir * moveSpeed;
 
-        if (anim != null)
-            anim.SetBool(IsMovingHash, true);
+        if (anim != null) anim.SetBool(IsMovingHash, true);
     }
 
-    private void UpdateFacing(Vector2 moveDir)
+    private void UpdateFacing(Vector2 toTarget)
     {
-        // N?u không có input ?áng k? theo X thì không ??i h??ng m?t
-        if (Mathf.Abs(moveDir.x) < 0.01f) return;
+        if (Mathf.Abs(toTarget.x) < 0.01f) return;
 
-        facingDir = moveDir.x > 0 ? Vector2.right : Vector2.left;
+        facingDir = toTarget.x > 0 ? Vector2.right : Vector2.left;
 
-        // Flip sprite theo h??ng (m?c ??nh sprite nhìn sang ph?i)
-        if (sr != null)
-            sr.flipX = (facingDir == Vector2.left);
+        if (sr != null) sr.flipX = (facingDir == Vector2.left);
 
-        // ??y vùng quét sang ?úng phía tr??c m?t
         ApplyDetectOffset();
     }
 
     private void ApplyDetectOffset()
     {
         if (detectCollider == null) return;
-
-        // V?i side-walk ch? c?n offset theo X
         detectCollider.offset = new Vector2(facingDir.x * detectOffsetDistance, 0f);
     }
 
-    private void Stop()
+    private void StopMove()
     {
         rb.velocity = Vector2.zero;
         if (anim != null) anim.SetBool(IsMovingHash, false);
+    }
+
+    // ===== Animation Events =====
+    public void AnimEvent_DealDamage()
+    {
+        Vector2 hitPos = rb.position + new Vector2(facingDir.x * attackRange, 0f);
+
+        Collider2D col = Physics2D.OverlapCircle(hitPos, hitRadius, playerLayer);
+        if (col == null) return;
+
+        Player_Health hp = col.GetComponent<Player_Health>();
+        if (hp != null) hp.TakeDamage(damage);
+    }
+
+    public void AnimEvent_AttackFinished()
+    {
+        isAttacking = false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -113,6 +185,15 @@ public class ZombieChase : MonoBehaviour
         {
             isChasing = false;
             target = null;
+            isAttacking = false;
+            isWindingUp = false; // reset
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Vector2 pos = (Vector2)transform.position + new Vector2(facingDir.x * attackRange, 0f);
+        Gizmos.DrawWireSphere(pos, hitRadius);
     }
 }
