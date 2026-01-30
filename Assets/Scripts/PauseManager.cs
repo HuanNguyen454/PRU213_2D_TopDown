@@ -33,7 +33,7 @@ public class PauseManager : MonoBehaviour
 
     public void QuitToMenu()
     {
-        Time.timeScale = 1f; // QUAN TRỌNG
+        Time.timeScale = 1f; 
         SceneManager.LoadScene(menuSceneName);
     }
 }

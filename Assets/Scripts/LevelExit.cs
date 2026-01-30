@@ -15,7 +15,7 @@ public class LevelExit : MonoBehaviour
 
         isLoading = true;
 
-        // phòng trường hợp trước đó đang pause/gameover
+        
         Time.timeScale = 1f;
 
         SceneManager.LoadScene(nextSceneName);
