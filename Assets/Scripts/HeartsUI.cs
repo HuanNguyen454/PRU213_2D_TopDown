@@ -17,7 +17,7 @@ public class HeartsUI : MonoBehaviour
     [SerializeField] private Image heartPrefab;
 
     [Header("Config")]
-    [SerializeField] private int hpPerHeart = 20; // 1 tim = bao nhiêu HP (100 HP => 5 tim n?u hpPerHeart=20)
+    [SerializeField] private int hpPerHeart = 20; // 1 tim = bao nhiï¿½u HP (100 HP => 5 tim n?u hpPerHeart=20)
 
     private readonly List<Image> hearts = new();
     private int lastHP = -1;
@@ -25,6 +25,14 @@ public class HeartsUI : MonoBehaviour
 
     private void Start()
     {
+        if (playerHealth == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+
+            if (player != null)
+                playerHealth = player.GetComponent<Player_Health>();
+        }
+
         Rebuild();
         Refresh();
     }
