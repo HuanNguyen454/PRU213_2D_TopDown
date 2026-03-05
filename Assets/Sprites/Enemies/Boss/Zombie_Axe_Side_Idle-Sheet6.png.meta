@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 192e77e83a26f1e4fbcd948ff20e504b
+guid: 3efb55b08795255498f8584f94531c6a
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -97,7 +97,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Zombie_Axe_Side-left_Idle-Sheet6_0
+      name: Zombie_Axe_Side_Idle-Sheet6_0
       rect:
         serializedVersion: 2
         x: 0
@@ -111,14 +111,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 372b39d906c653947acc922cdc3ae053
-      internalID: -301948623
+      spriteID: 5fa09be76bdf42649997ffaac54d6d54
+      internalID: -951541562
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Zombie_Axe_Side-left_Idle-Sheet6_1
+      name: Zombie_Axe_Side_Idle-Sheet6_1
       rect:
         serializedVersion: 2
         x: 22
@@ -132,14 +132,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fb8a4d5de5b137949bc8dc18b76f41f1
-      internalID: -2133482869
+      spriteID: fa48a1ac29626204c9bf12917c2baa03
+      internalID: -170160406
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Zombie_Axe_Side-left_Idle-Sheet6_2
+      name: Zombie_Axe_Side_Idle-Sheet6_2
       rect:
         serializedVersion: 2
         x: 44
@@ -153,14 +153,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 729e4239961c8d745aa9cd4191af272d
-      internalID: -978514534
+      spriteID: 5293103c2e49dfa48ae7ac26ac447054
+      internalID: -1477529591
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Zombie_Axe_Side-left_Idle-Sheet6_3
+      name: Zombie_Axe_Side_Idle-Sheet6_3
       rect:
         serializedVersion: 2
         x: 66
@@ -174,14 +174,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fc45a0b4040c2964b9af35a0683320a9
-      internalID: -1989797430
+      spriteID: e1600b1a545ab054392ee20a68a373b3
+      internalID: 839331298
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Zombie_Axe_Side-left_Idle-Sheet6_4
+      name: Zombie_Axe_Side_Idle-Sheet6_4
       rect:
         serializedVersion: 2
         x: 88
@@ -195,14 +195,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 760ef7b19560f4b44be76e86a1e3eedf
-      internalID: 1105831532
+      spriteID: dd2f2b936c1161b4788355e2520e2ff7
+      internalID: 1768208577
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Zombie_Axe_Side-left_Idle-Sheet6_5
+      name: Zombie_Axe_Side_Idle-Sheet6_5
       rect:
         serializedVersion: 2
         x: 110
@@ -216,8 +216,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e8a9b83ef6fdd8b4f8a9d6106d8fc1ca
-      internalID: -1793263660
+      spriteID: 0027607ab1fe5464387fa64e8d638d6c
+      internalID: -248229516
       vertices: []
       indices: 
       edges: []
@@ -233,12 +233,12 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Zombie_Axe_Side-left_Idle-Sheet6_0: -301948623
-      Zombie_Axe_Side-left_Idle-Sheet6_1: -2133482869
-      Zombie_Axe_Side-left_Idle-Sheet6_2: -978514534
-      Zombie_Axe_Side-left_Idle-Sheet6_3: -1989797430
-      Zombie_Axe_Side-left_Idle-Sheet6_4: 1105831532
-      Zombie_Axe_Side-left_Idle-Sheet6_5: -1793263660
+      Zombie_Axe_Side_Idle-Sheet6_0: -951541562
+      Zombie_Axe_Side_Idle-Sheet6_1: -170160406
+      Zombie_Axe_Side_Idle-Sheet6_2: -1477529591
+      Zombie_Axe_Side_Idle-Sheet6_3: 839331298
+      Zombie_Axe_Side_Idle-Sheet6_4: 1768208577
+      Zombie_Axe_Side_Idle-Sheet6_5: -248229516
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
