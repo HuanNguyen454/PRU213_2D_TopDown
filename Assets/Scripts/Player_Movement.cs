@@ -30,6 +30,7 @@ public class Player_Movement : MonoBehaviour
 
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
+        DontDestroyOnLoad(gameObject);
     }
 
     public void OnMove(InputAction.CallbackContext context)
