@@ -25,6 +25,13 @@ public class HeartsUI : MonoBehaviour
 
     private void Start()
     {
+        StartCoroutine(Init());
+    }
+
+    private System.Collections.IEnumerator Init()
+    {
+        yield return null;
+
         if (playerHealth == null)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -33,10 +40,15 @@ public class HeartsUI : MonoBehaviour
                 playerHealth = player.GetComponent<Player_Health>();
         }
 
+        if (playerHealth == null)
+        {
+            Debug.LogError("PlayerHealth not found");
+            yield break;
+        }
+
         Rebuild();
         Refresh();
     }
-
     private void Update()
     {
         if (playerHealth == null) return;
