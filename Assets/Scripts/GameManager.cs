@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     [SerializeField] private SaveManager saveManager;
-
+    [SerializeField] private GameObject playerPrefab;
     private void Awake()
     {
         if (Instance != null)
@@ -47,14 +47,27 @@ public class GameManager : MonoBehaviour
 
         Player_Health player = FindObjectOfType<Player_Health>();
 
-        if (player != null)
+        if (player == null)
         {
-            player.TakeDamage(player.CurrentHP - data.playerHP);
-
-            player.transform.position = new Vector2(
-                data.playerPosX,
-                data.playerPosY
-            );
+            GameObject newPlayer = Instantiate(playerPrefab);
+            player = newPlayer.GetComponent<Player_Health>();
         }
+
+        player.transform.position = new Vector2(
+            data.playerPosX,
+            data.playerPosY
+        );
+
+        player.TakeDamage(player.CurrentHP - data.playerHP);
+        var cam = FindObjectOfType<Cinemachine.CinemachineVirtualCamera>();
+        if (cam != null)
+        {
+            cam.Follow = player.transform;
+            cam.LookAt = player.transform;
+        }
+    }
+    private void OnApplicationQuit()
+    {
+        SaveGame();
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class SenceLoader : MonoBehaviour
 {
-    [SerializeField] private string gameSceneName = "Scene";
+    [SerializeField] private string gameSceneName = "Map1";
 
     public void LoadGame()
     {
