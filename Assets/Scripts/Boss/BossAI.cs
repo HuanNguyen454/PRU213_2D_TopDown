@@ -248,11 +248,19 @@ public class BossAI : MonoBehaviour
     // G?n vào clip Second_Attack_Boss t?i frame "ném rìu"
     public void AnimEvent_SpawnAxe()
     {
-        if (axePrefab == null) return;
+        Debug.Log("AnimEvent_SpawnAxe CALLED");
+
+        if (axePrefab == null)
+        {
+            Debug.LogError("axePrefab is NULL!");
+            return;
+        }
 
         Vector2 spawnPos = axeSpawnPoint != null
             ? (Vector2)axeSpawnPoint.position
             : rb.position + new Vector2(facingDir.x * axeSpawnForwardOffset, 0f);
+
+        Debug.Log($"Spawning axe at {spawnPos}");
 
         AxeProjectile axe = Instantiate(axePrefab, spawnPos, Quaternion.identity);
         axe.Launch(facingDir);
