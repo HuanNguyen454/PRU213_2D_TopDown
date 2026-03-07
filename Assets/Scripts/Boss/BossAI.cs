@@ -7,20 +7,23 @@ public class BossAI : MonoBehaviour
 {
     [Header("Detect (Circle Trigger)")]
     [SerializeField] private CircleCollider2D detectCollider; // MUST be Is Trigger
-    [SerializeField] private float detectOffsetDistance = 1.2f;
+
+    [Header("Origin (Optional)")]
+    [SerializeField] private Transform attackOrigin; // n?u ?? tr?ng s? dùng rb.position
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 2.0f;
     [SerializeField] private float stopDistance = 0.6f;
 
     [Header("Melee Attack")]
-    [SerializeField] private float meleeRange = 2.5f;   // <- t?ng n?u boss scale l?n
+    [SerializeField] private float meleeRange = 2.5f;        // ?i?u ki?n b?t ??u ?ánh
+    [SerializeField] private float meleeHitOffset = 1.0f;    // tâm hitbox ??t tr??c m?t
     [SerializeField] private float attackCooldown = 0.8f;
     [SerializeField] private float meleeWindup = 0.25f;
 
     [Header("Throw Axe (Second Attack)")]
-    [SerializeField] private float throwMinDistance = 3.5f; // ch? ném khi Player ?? xa ?? ph?n ?ng
-    [SerializeField] private float throwMaxDistance = 9.0f; // quá xa thì thôi
+    [SerializeField] private float throwMinDistance = 3.5f;  // ch? ném khi player ?? xa
+    [SerializeField] private float throwMaxDistance = 9.0f;
     [SerializeField] private float throwWindup = 0.35f;
 
     [Header("Pattern")]
@@ -33,8 +36,8 @@ public class BossAI : MonoBehaviour
 
     [Header("Axe Projectile")]
     [SerializeField] private AxeProjectile axePrefab;
-    [SerializeField] private Transform axeSpawnPoint;          // child empty phía tr??c tay
-    [SerializeField] private float axeSpawnForwardOffset = 0.8f; // dùng khi spawnPoint null
+    [SerializeField] private Transform axeSpawnPoint;           // child empty
+    [SerializeField] private float axeSpawnForwardOffset = 0.8f;
 
     private Rigidbody2D rb;
     private Animator anim;
@@ -45,6 +48,7 @@ public class BossAI : MonoBehaviour
     private bool isChasing;
 
     private Vector2 facingDir = Vector2.right;
+    private float lockedFacingX = 1f;
 
     private bool isAttacking;
     private bool isWindingUp;
@@ -52,12 +56,14 @@ public class BossAI : MonoBehaviour
     private float nextAttackTime;
 
     private int firstAttackCounter;
-    private bool pendingSecond; // ?ã ?? 6 hit -> ch? c? h?i ném
+    private bool pendingSecond;
 
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
     private static readonly int FirstAttackHash = Animator.StringToHash("FirstAttack");
     private static readonly int SecondAttackHash = Animator.StringToHash("SecondAttack");
     private static readonly int DieHash = Animator.StringToHash("Die");
+
+    private Vector2 OriginPos => attackOrigin != null ? (Vector2)attackOrigin.position : rb.position;
 
     private void Awake()
     {
@@ -70,12 +76,16 @@ public class BossAI : MonoBehaviour
         rb.freezeRotation = true;
 
         if (detectCollider == null) detectCollider = GetComponent<CircleCollider2D>();
-        ApplyDetectOffset();
+        if (detectCollider != null)
+        {
+            detectCollider.offset = Vector2.zero;
+            // nh? tick Is Trigger trong Inspector
+        }
     }
 
     private void FixedUpdate()
     {
-        // ch?t
+        // Dead
         if (health != null && health.IsDead)
         {
             StopMove();
@@ -84,7 +94,7 @@ public class BossAI : MonoBehaviour
             return;
         }
 
-        // không có target
+        // Không có target
         if (!isChasing || target == null)
         {
             StopMove();
@@ -92,19 +102,20 @@ public class BossAI : MonoBehaviour
             return;
         }
 
-        // ?ang attack => ??ng yên
+        // ?ang ?ánh => ??ng yên
         if (isAttacking)
         {
             StopMove();
             return;
         }
 
-        Vector2 toTarget = (Vector2)target.position - rb.position;
+        Vector2 origin = OriginPos;
+        Vector2 toTarget = (Vector2)target.position - origin;
         float dist = toTarget.magnitude;
 
         UpdateFacing(toTarget);
 
-        // 1) ?U TIÊN NÉM n?u ?ang pendingSecond và Player ?? xa
+        // 1) Ném rìu khi pendingSecond và player ?? xa
         if (pendingSecond && dist >= throwMinDistance && dist <= throwMaxDistance)
         {
             StopMove();
@@ -118,7 +129,6 @@ public class BossAI : MonoBehaviour
                 return;
             }
 
-            // player ch?y g?n l?i -> h?y ý ??nh ném
             if (dist < throwMinDistance)
             {
                 ResetWindup();
@@ -133,7 +143,7 @@ public class BossAI : MonoBehaviour
             return;
         }
 
-        // 2) MELEE n?u ?? g?n
+        // 2) Melee
         if (dist <= meleeRange)
         {
             StopMove();
@@ -147,7 +157,6 @@ public class BossAI : MonoBehaviour
                 return;
             }
 
-            // player ch?y ra kh?i melee -> h?y windup
             if (dist > meleeRange)
             {
                 ResetWindup();
@@ -166,7 +175,7 @@ public class BossAI : MonoBehaviour
             ResetWindup();
         }
 
-        // 3) Chase
+        // 3) Chase (dùng origin ?? tính dir ?n ??nh)
         if (dist <= stopDistance)
         {
             StopMove();
@@ -180,48 +189,32 @@ public class BossAI : MonoBehaviour
 
     private void StartAttack(bool isSecond)
     {
+        lockedFacingX = facingDir.x; // khóa h??ng m?t t?i th?i ?i?m ra ?òn
+
         isAttacking = true;
         nextAttackTime = Time.time + attackCooldown;
 
         if (isSecond)
         {
-            // ném rìu
             pendingSecond = false;
             firstAttackCounter = 0;
-
             if (anim != null) anim.SetTrigger(SecondAttackHash);
             return;
         }
 
-        // first attack
         if (anim != null) anim.SetTrigger(FirstAttackHash);
 
         firstAttackCounter++;
         if (firstAttackCounter >= firstAttackCountBeforeSecond)
-        {
-            pendingSecond = true; // ch? c? h?i ném khi player ch?y xa
-        }
+            pendingSecond = true;
     }
 
-    private void ResetWindup()
-    {
-        isWindingUp = false;
-    }
+    private void ResetWindup() => isWindingUp = false;
 
     private void UpdateFacing(Vector2 toTarget)
     {
-        if (toTarget.x > 0.01f) facingDir = Vector2.right;
-        else if (toTarget.x < -0.01f) facingDir = Vector2.left;
-
+        facingDir = (toTarget.x >= 0f) ? Vector2.right : Vector2.left;
         if (sr != null) sr.flipX = (facingDir == Vector2.left);
-
-        ApplyDetectOffset();
-    }
-
-    private void ApplyDetectOffset()
-    {
-        if (detectCollider == null) return;
-        detectCollider.offset = new Vector2(facingDir.x * detectOffsetDistance, detectCollider.offset.y);
     }
 
     private void StopMove()
@@ -230,14 +223,14 @@ public class BossAI : MonoBehaviour
         if (anim != null) anim.SetBool(IsMovingHash, false);
     }
 
-    // ===========================
-    // Animation Events
-    // ===========================
+    // ===== Animation Events =====
 
-    // G?n vào clip First_Attack_Boss t?i frame "trúng ?òn"
+    // AOE tr??c m?t (player ??ng sau l?ng không ?n)
     public void AnimEvent_FirstAttackDealDamage()
     {
-        Vector2 hitPos = rb.position + new Vector2(facingDir.x * meleeRange, 0f);
+        Vector2 origin = OriginPos;
+        Vector2 hitPos = origin + new Vector2(lockedFacingX * meleeHitOffset, 0f);
+
         Collider2D col = Physics2D.OverlapCircle(hitPos, hitRadius, playerLayer);
         if (col == null) return;
 
@@ -245,36 +238,33 @@ public class BossAI : MonoBehaviour
         if (ph != null) ph.TakeDamage(firstAttackDamage);
     }
 
-    // G?n vào clip Second_Attack_Boss t?i frame "ném rìu"
+    // G?n event vào clip Second_Attack_Boss t?i frame ném
     public void AnimEvent_SpawnAxe()
     {
-        Debug.Log("AnimEvent_SpawnAxe CALLED");
+        if (axePrefab == null) return;
 
-        if (axePrefab == null)
+        Vector2 spawnPos;
+
+        if (axeSpawnPoint != null)
         {
-            Debug.LogError("axePrefab is NULL!");
-            return;
+            // Mirror spawnpoint theo h??ng m?t (vì child không t? flip)
+            Vector3 local = axeSpawnPoint.localPosition;
+            float lx = Mathf.Abs(local.x) * lockedFacingX;
+            spawnPos = transform.TransformPoint(new Vector3(lx, local.y, local.z));
+        }
+        else
+        {
+            spawnPos = OriginPos + new Vector2(lockedFacingX * axeSpawnForwardOffset, 0f);
         }
 
-        Vector2 spawnPos = axeSpawnPoint != null
-            ? (Vector2)axeSpawnPoint.position
-            : rb.position + new Vector2(facingDir.x * axeSpawnForwardOffset, 0f);
-
-        Debug.Log($"Spawning axe at {spawnPos}");
-
         AxeProjectile axe = Instantiate(axePrefab, spawnPos, Quaternion.identity);
-        axe.Launch(facingDir);
+        axe.Launch(new Vector2(lockedFacingX, 0f));
     }
 
-    // G?n vào frame cu?i c?a First/Second attack (?? boss di chuy?n l?i)
-    public void AnimEvent_AttackFinished()
-    {
-        isAttacking = false;
-    }
+    // G?n event cu?i clip First/Second attack
+    public void AnimEvent_AttackFinished() => isAttacking = false;
 
-    // ===========================
-    // Detect Player via Trigger
-    // ===========================
+    // ===== Detect Player via Trigger =====
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -296,23 +286,17 @@ public class BossAI : MonoBehaviour
         }
     }
 
-    // ===========================
-    // Gizmos debug
-    // ===========================
-
     private void OnDrawGizmosSelected()
     {
-        // meleeRange (?i?u ki?n b?t ??u ?ánh)
+        Vector2 origin = attackOrigin != null ? (Vector2)attackOrigin.position : (Vector2)transform.position;
+
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, meleeRange);
+        Gizmos.DrawWireSphere(origin, meleeRange);
 
-        // hitPos + hitRadius (vùng trúng ?òn)
         Gizmos.color = Color.red;
-        Vector2 pos = (Vector2)transform.position + new Vector2(facingDir.x * meleeRange, 0f);
-        Gizmos.DrawWireSphere(pos, hitRadius);
+        Gizmos.DrawWireSphere(origin + new Vector2(facingDir.x * meleeHitOffset, 0f), hitRadius);
 
-        // throwMinDistance (kho?ng xa m?i ném)
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, throwMinDistance);
+        Gizmos.DrawWireSphere(origin, throwMinDistance);
     }
 }
