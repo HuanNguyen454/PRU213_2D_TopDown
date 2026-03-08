@@ -5,7 +5,7 @@ using UnityEngine;
 public class FoodPickup : MonoBehaviour
 {
     public int healAmount = 10;
-    public float lifeTime = 7f;
+    public float lifeTime = 20f;
 
     void Start()
     {
