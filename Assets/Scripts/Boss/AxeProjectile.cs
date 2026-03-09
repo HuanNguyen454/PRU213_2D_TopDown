@@ -28,7 +28,7 @@ public class AxeProjectile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // ch? hit Player layer
+        // Only hit Player layer
         if (((1 << other.gameObject.layer) & playerLayer) == 0) return;
 
         Player_Health hp = other.GetComponent<Player_Health>();

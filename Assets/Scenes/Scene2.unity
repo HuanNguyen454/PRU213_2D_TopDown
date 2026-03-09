@@ -572,6 +572,63 @@ Camera:
   m_OcclusionCulling: 0
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!1001 &765767325
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2202936146883286145, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -5.338373
+      objectReference: {fileID: 0}
+    - target: {fileID: 2202936146883286145, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -2.437106
+      objectReference: {fileID: 0}
+    - target: {fileID: 2202936146883286145, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.8441606
+      objectReference: {fileID: 0}
+    - target: {fileID: 2202936146883286145, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2202936146883286145, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2202936146883286145, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2202936146883286145, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2202936146883286145, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2202936146883286145, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2202936146883286145, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6024515065074639547, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
+      propertyPath: m_Name
+      value: FoodSpawner
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 5f87af1ca2bda5843811ebd0ff279774, type: 3}
 --- !u!1 &806462322
 GameObject:
   m_ObjectHideFlags: 0
@@ -25987,3 +26044,4 @@ SceneRoots:
   - {fileID: 97178878}
   - {fileID: 36901096}
   - {fileID: 1634347631}
+  - {fileID: 765767325}
