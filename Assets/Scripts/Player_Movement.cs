@@ -14,7 +14,9 @@ public class Player_Movement : MonoBehaviour
     private SpriteRenderer sr;
 
     private Vector2 moveInput;
-    private Vector2 lastCardinalDir = Vector2.down; 
+    private Vector2 lastCardinalDir = Vector2.down;
+
+    public Vector2 LastMoveDirection => lastCardinalDir;
 
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
     private static readonly int MoveXHash = Animator.StringToHash("MoveX");
