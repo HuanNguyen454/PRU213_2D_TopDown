@@ -105,7 +105,11 @@ public class AmmoUI : MonoBehaviour
         }
 
         ammoText.gameObject.SetActive(true);
-        ammoText.text = $"{currentAmmo}/{reserveAmmo}";
+
+        if (playerGun.IsReloading)
+            ammoText.text = $"Reloading...\n{currentAmmo}/{reserveAmmo}";
+        else
+            ammoText.text = $"{currentAmmo}/{reserveAmmo}";
     }
 
     private void HideUI()
