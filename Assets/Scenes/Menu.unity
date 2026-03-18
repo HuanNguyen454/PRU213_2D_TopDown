@@ -946,6 +946,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   saveManager: {fileID: 1621562034}
   playerPrefab: {fileID: 1580946473655561189, guid: 53c25fe3808449440973f61dda8e8b9b, type: 3}
+  playerTag: Player
 --- !u!4 &1621562036
 Transform:
   m_ObjectHideFlags: 0

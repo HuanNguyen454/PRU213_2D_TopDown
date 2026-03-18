@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,38 +16,43 @@ public class HeartsUI : MonoBehaviour
     [SerializeField] private Image heartPrefab;
 
     [Header("Config")]
-    [SerializeField] private int hpPerHeart = 20; // 1 tim = bao nhi�u HP (100 HP => 5 tim n?u hpPerHeart=20)
+    [SerializeField] private int hpPerHeart = 20;
 
     private readonly List<Image> hearts = new();
     private int lastHP = -1;
     private int lastMaxHP = -1;
 
-    private void Start()
+    private void OnEnable()
     {
-        StartCoroutine(Init());
+        // Subscribe event
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnPlayerSpawned += HandlePlayerSpawned;
+
+            // Nếu player đã có sẵn thì gán luôn
+            var p = GameManager.Instance.GetCurrentPlayer();
+            if (p != null) HandlePlayerSpawned(p);
+        }
     }
 
-    private System.Collections.IEnumerator Init()
+    private void OnDisable()
     {
-        yield return null;
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnPlayerSpawned -= HandlePlayerSpawned;
+    }
 
-        if (playerHealth == null)
-        {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
+    private void HandlePlayerSpawned(Player_Health hp)
+    {
+        playerHealth = hp;
 
-            if (player != null)
-                playerHealth = player.GetComponent<Player_Health>();
-        }
-
-        if (playerHealth == null)
-        {
-            Debug.LogError("PlayerHealth not found");
-            yield break;
-        }
+        // Force refresh
+        lastHP = -1;
+        lastMaxHP = -1;
 
         Rebuild();
         Refresh();
     }
+
     private void Update()
     {
         if (playerHealth == null) return;
@@ -66,7 +70,8 @@ public class HeartsUI : MonoBehaviour
 
     private void Rebuild()
     {
-        // Clear old
+        if (playerHealth == null) return;
+
         foreach (Transform child in transform) Destroy(child.gameObject);
         hearts.Clear();
 
@@ -82,8 +87,9 @@ public class HeartsUI : MonoBehaviour
 
     private void Refresh()
     {
-        lastHP = playerHealth.CurrentHP;
+        if (playerHealth == null) return;
 
+        lastHP = playerHealth.CurrentHP;
         int halfHeartHP = hpPerHeart / 2;
 
         for (int i = 0; i < hearts.Count; i++)
