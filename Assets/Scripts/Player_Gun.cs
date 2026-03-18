@@ -34,6 +34,7 @@ public class Player_Gun : MonoBehaviour
     public bool HasGun => hasGun;
     public int CurrentAmmo => currentAmmo;
     public int ReserveAmmo => reserveAmmo;
+    public int MagazineSize => magazineSize;
 
     private void Awake()
     {
@@ -50,12 +51,21 @@ public class Player_Gun : MonoBehaviour
 
     public void PickupGun(int magSize, int reserve)
     {
-        hasGun = true;
-        magazineSize = magSize;
-        currentAmmo = magSize;
-        reserveAmmo = reserve;
+        if (!hasGun)
+        {
+            hasGun = true;
+            magazineSize = magSize;
+            currentAmmo = magSize;
+            reserveAmmo = reserve;
+        }
+        else
+        {
+            // Theo ?úng yêu c?u c?a b?n:
+            // ?ang 12/12 mà nh?t thêm súng 12 viên thì thành 24/12
+            currentAmmo += magSize;
+        }
 
-        Debug.Log("Picked up gun!");
+        Debug.Log($"Picked up gun! Ammo now: {currentAmmo}/{reserveAmmo}");
         NotifyAmmoChanged();
     }
 
@@ -130,30 +140,18 @@ public class Player_Gun : MonoBehaviour
 
     private void SpawnBullet()
     {
-        Debug.Log("SpawnBullet called");
-
-        if (bulletPrefab == null)
-        {
-            Debug.LogWarning("bulletPrefab is NULL!");
-            return;
-        }
+        if (bulletPrefab == null) return;
 
         Vector2 dir = playerMovement != null ? playerMovement.LastMoveDirection : Vector2.down;
 
         if (dir == Vector2.zero)
             dir = Vector2.down;
 
-        Debug.Log($"Shoot dir = {dir}");
-
         Vector3 spawnPos;
 
         if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
         {
-            if (firePointSide == null)
-            {
-                Debug.LogWarning("firePointSide is NULL!");
-                return;
-            }
+            if (firePointSide == null) return;
 
             if (dir.x > 0f)
             {
@@ -167,30 +165,25 @@ public class Player_Gun : MonoBehaviour
         }
         else
         {
-            if (firePointDown == null)
-            {
-                Debug.LogWarning("firePointDown is NULL!");
-                return;
-            }
-
+            if (firePointDown == null) return;
             spawnPos = firePointDown.position;
         }
 
-        Debug.Log($"Spawn position = {spawnPos}");
-
         GameObject bulletObj = Instantiate(bulletPrefab, spawnPos, Quaternion.identity);
-        Debug.Log("Bullet instantiated: " + bulletObj.name);
 
-        Bullet bullet = bulletObj.GetComponent<Bullet>();
-        if (bullet == null)
+        Collider2D bulletCol = bulletObj.GetComponent<Collider2D>();
+        Collider2D playerCol = GetComponent<Collider2D>();
+        if (bulletCol != null && playerCol != null)
         {
-            Debug.LogWarning("Bullet script is missing on prefab!");
-            return;
+            Physics2D.IgnoreCollision(bulletCol, playerCol);
         }
 
+        Bullet bullet = bulletObj.GetComponent<Bullet>();
+        if (bullet == null) return;
+
         bullet.Launch(dir);
-        Debug.Log("Bullet launched");
     }
+
     private void NotifyAmmoChanged()
     {
         OnAmmoChanged?.Invoke(currentAmmo, reserveAmmo);
