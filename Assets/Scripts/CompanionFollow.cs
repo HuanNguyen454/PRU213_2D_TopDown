@@ -4,7 +4,6 @@ using UnityEngine;
 public class CompanionFollow : MonoBehaviour
 {
     [Header("Follow Target")]
-    [SerializeField] private Transform player;
     [SerializeField] private float followDistance = 1.5f;
     [SerializeField] private float followRadius = 5f;
 
@@ -18,6 +17,8 @@ public class CompanionFollow : MonoBehaviour
     [Header("Sprite Facing")]
     [SerializeField] private bool spriteFacesRightByDefault = true;
 
+    private Transform player;
+
     // Runtime state (set from CompanionCombat)
     private bool isEnemyNear;
     private Transform combatTarget;
@@ -27,8 +28,8 @@ public class CompanionFollow : MonoBehaviour
     private SpriteRenderer sr;
 
     // ===== Animator params (PascalCase) =====
-    private static readonly int IsWalkingHash   = Animator.StringToHash("IsWalking");
-    private static readonly int IsRunningHash   = Animator.StringToHash("IsRunning");
+    private static readonly int IsWalkingHash = Animator.StringToHash("IsWalking");
+    private static readonly int IsRunningHash = Animator.StringToHash("IsRunning");
     private static readonly int IsAttackingHash = Animator.StringToHash("IsAttacking");
 
     public bool IsEnemyNear
@@ -50,6 +51,20 @@ public class CompanionFollow : MonoBehaviour
 
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
+    }
+
+    private void Start()
+    {
+        // 🔥 Tự tìm Player bằng tag
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null)
+        {
+            player = p.transform;
+        }
+        else
+        {
+            Debug.LogWarning("Không tìm thấy object có tag 'Player'");
+        }
     }
 
     private void FixedUpdate()
@@ -80,7 +95,7 @@ public class CompanionFollow : MonoBehaviour
         }
         else if (combatTarget != null)
         {
-            // Đang đuổi enemy (chưa vào tầm đánh) => chạy
+            // Đang đuổi enemy => chạy
             if (distance > 0.05f)
             {
                 running = true;
@@ -120,7 +135,6 @@ public class CompanionFollow : MonoBehaviour
     {
         if (anim == null) return;
 
-        // Attack ưu tiên cao nhất: bật IsAttacking thì tắt movement
         if (attacking)
         {
             anim.SetBool(IsAttackingHash, true);

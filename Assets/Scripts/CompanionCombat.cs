@@ -45,7 +45,7 @@ public class CompanionCombat : MonoBehaviour
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, detectRadius);
         float bestDist = Mathf.Infinity;
         Transform bestTarget = null;
-
+ 
         foreach (var col in hits)
         {
             if (col.isTrigger) continue;
@@ -59,7 +59,7 @@ public class CompanionCombat : MonoBehaviour
                 bestDist = d;
                 bestTarget = root;
             }
-        }
+        }   
 
         currentTarget = bestTarget;
 
@@ -101,7 +101,7 @@ public class CompanionCombat : MonoBehaviour
 
     private void StartAttack()
     {
-        // Nếu bạn dùng Trigger attack riêng:
+        // Nếu dùng Trigger attack riêng:
         // anim.SetTrigger("Attack");
     }
 
