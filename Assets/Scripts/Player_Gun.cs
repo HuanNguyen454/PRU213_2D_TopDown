@@ -14,6 +14,10 @@ public class Player_Gun : MonoBehaviour
     [Header("Shoot Settings")]
     [SerializeField] private float fireCooldown = 0.2f;
 
+    [Header("Reload Settings")]
+    [SerializeField] private float reloadDuration = 0.8f;
+    [SerializeField] private bool autoReloadWhenEmpty = true;
+
     [Header("Visual")]
     [SerializeField] private SpriteRenderer gunOverlayRenderer;
     [SerializeField] private Sprite shootDownSprite;
@@ -25,13 +29,28 @@ public class Player_Gun : MonoBehaviour
     [SerializeField] private Transform firePointSide;
     [SerializeField] private GameObject bulletPrefab;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource gunAudioSource;
+    [SerializeField] private AudioClip shootSfx;
+    [SerializeField] private AudioClip reloadSfx;
+    [SerializeField] private AudioClip emptySfx;
+    [SerializeField] private float shootVolume = 1f;
+    [SerializeField] private float reloadVolume = 1f;
+    [SerializeField] private float emptyVolume = 1f;
+    [SerializeField] private float emptySfxCooldown = 0.15f;
+
     private float lastFireTime;
+    private float lastEmptySfxTime = -999f;
+    private bool isReloading = false;
+
     private Player_Movement playerMovement;
     private Coroutine gunVisualRoutine;
+    private Coroutine reloadRoutine;
 
     public event Action<int, int> OnAmmoChanged;
 
     public bool HasGun => hasGun;
+    public bool IsReloading => isReloading;
     public int CurrentAmmo => currentAmmo;
     public int ReserveAmmo => reserveAmmo;
     public int MagazineSize => magazineSize;
@@ -39,6 +58,16 @@ public class Player_Gun : MonoBehaviour
     private void Awake()
     {
         playerMovement = GetComponent<Player_Movement>();
+
+        if (gunAudioSource == null)
+            gunAudioSource = GetComponent<AudioSource>();
+
+        if (gunAudioSource != null)
+        {
+            gunAudioSource.playOnAwake = false;
+            gunAudioSource.loop = false;
+            gunAudioSource.spatialBlend = 0f;
+        }
     }
 
     private void Start()
@@ -60,9 +89,8 @@ public class Player_Gun : MonoBehaviour
         }
         else
         {
-            // Theo ?úng yêu c?u c?a b?n:
-            // ?ang 12/12 mà nh?t thêm súng 12 viên thì thành 24/12
-            currentAmmo += magSize;
+            // Nh?t thêm thì c?ng vào ??n d? tr?
+            reserveAmmo += reserve;
         }
 
         Debug.Log($"Picked up gun! Ammo now: {currentAmmo}/{reserveAmmo}");
@@ -75,6 +103,12 @@ public class Player_Gun : MonoBehaviour
         TryShoot();
     }
 
+    public void OnReload(InputAction.CallbackContext context)
+    {
+        if (!context.performed) return;
+        TryReload();
+    }
+
     private void TryShoot()
     {
         if (!hasGun)
@@ -83,12 +117,20 @@ public class Player_Gun : MonoBehaviour
             return;
         }
 
+        if (isReloading)
+            return;
+
         if (Time.time < lastFireTime + fireCooldown)
             return;
 
         if (currentAmmo <= 0)
         {
             Debug.Log("Out of ammo!");
+            PlayEmptySfx();
+
+            if (autoReloadWhenEmpty)
+                TryReload();
+
             return;
         }
 
@@ -97,8 +139,47 @@ public class Player_Gun : MonoBehaviour
 
         ShowGunOverlay();
         SpawnBullet();
+        PlayShootSfx();
 
         Debug.Log($"Ammo: {currentAmmo}/{reserveAmmo}");
+        NotifyAmmoChanged();
+
+        if (currentAmmo <= 0 && autoReloadWhenEmpty)
+        {
+            TryReload();
+        }
+    }
+
+    private void TryReload()
+    {
+        if (!hasGun) return;
+        if (isReloading) return;
+        if (currentAmmo >= magazineSize) return;
+        if (reserveAmmo <= 0) return;
+
+        if (reloadRoutine != null)
+            StopCoroutine(reloadRoutine);
+
+        reloadRoutine = StartCoroutine(ReloadRoutine());
+    }
+
+    private IEnumerator ReloadRoutine()
+    {
+        isReloading = true;
+        NotifyAmmoChanged();
+        PlayReloadSfx();
+
+        yield return new WaitForSeconds(reloadDuration);
+
+        int needed = magazineSize - currentAmmo;
+        int amountToLoad = Mathf.Min(needed, reserveAmmo);
+
+        currentAmmo += amountToLoad;
+        reserveAmmo -= amountToLoad;
+
+        isReloading = false;
+
+        Debug.Log($"Reloaded! Ammo: {currentAmmo}/{reserveAmmo}");
         NotifyAmmoChanged();
     }
 
@@ -182,6 +263,29 @@ public class Player_Gun : MonoBehaviour
         if (bullet == null) return;
 
         bullet.Launch(dir);
+    }
+
+    private void PlayShootSfx()
+    {
+        if (gunAudioSource == null || shootSfx == null) return;
+        gunAudioSource.PlayOneShot(shootSfx, shootVolume);
+    }
+
+    private void PlayReloadSfx()
+    {
+        if (gunAudioSource == null || reloadSfx == null) return;
+        gunAudioSource.PlayOneShot(reloadSfx, reloadVolume);
+    }
+
+    private void PlayEmptySfx()
+    {
+        if (gunAudioSource == null || emptySfx == null) return;
+
+        if (Time.time < lastEmptySfxTime + emptySfxCooldown)
+            return;
+
+        lastEmptySfxTime = Time.time;
+        gunAudioSource.PlayOneShot(emptySfx, emptyVolume);
     }
 
     private void NotifyAmmoChanged()

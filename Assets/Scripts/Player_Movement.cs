@@ -9,6 +9,11 @@ public class Player_Movement : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private bool useFlipForLeftRight = true;
 
+    [Header("Move Audio")]
+    [SerializeField] private AudioSource moveAudioSource;
+    [SerializeField] private AudioClip moveSfx;
+    [SerializeField] private float moveVolume = 0.7f;
+
     private Rigidbody2D rb;
     private Animator anim;
     private SpriteRenderer sr;
@@ -33,6 +38,15 @@ public class Player_Movement : MonoBehaviour
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
         DontDestroyOnLoad(gameObject);
+
+        if (moveAudioSource != null)
+        {
+            moveAudioSource.playOnAwake = false;
+            moveAudioSource.loop = true;
+            moveAudioSource.spatialBlend = 0f;
+            moveAudioSource.volume = moveVolume;
+            moveAudioSource.clip = moveSfx;
+        }
     }
 
     public void OnMove(InputAction.CallbackContext context)
@@ -47,9 +61,10 @@ public class Player_Movement : MonoBehaviour
 
         rb.velocity = dir * moveSpeed;
 
+        bool isMoving = dir.sqrMagnitude > 0.01f;
+
         if (anim != null)
         {
-            bool isMoving = dir.sqrMagnitude > 0.01f;
             anim.SetBool(IsMovingHash, isMoving);
 
             anim.SetFloat(MoveXHash, dir.x);
@@ -71,6 +86,29 @@ public class Player_Movement : MonoBehaviour
         {
             if (dir.x > 0.01f) sr.flipX = false;
             else if (dir.x < -0.01f) sr.flipX = true;
+        }
+
+        HandleMoveSound(isMoving);
+    }
+
+    private void HandleMoveSound(bool isMoving)
+    {
+        if (moveAudioSource == null || moveSfx == null) return;
+
+        if (moveAudioSource.clip != moveSfx)
+            moveAudioSource.clip = moveSfx;
+
+        moveAudioSource.volume = moveVolume;
+
+        if (isMoving)
+        {
+            if (!moveAudioSource.isPlaying)
+                moveAudioSource.Play();
+        }
+        else
+        {
+            if (moveAudioSource.isPlaying)
+                moveAudioSource.Stop();
         }
     }
 }

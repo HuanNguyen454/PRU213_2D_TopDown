@@ -28,7 +28,8 @@ public class Player_Attack : MonoBehaviour
 
     private void Update()
     {
-        if (sr != null) facingDir = sr.flipX ? Vector2.left : Vector2.right;
+        if (sr != null)
+            facingDir = sr.flipX ? Vector2.left : Vector2.right;
     }
 
     public void OnAttack(InputAction.CallbackContext context)
@@ -38,7 +39,8 @@ public class Player_Attack : MonoBehaviour
 
         nextAttackTime = Time.time + attackCooldown;
 
-        if (anim != null) anim.SetTrigger(AttackHash);
+        if (anim != null)
+            anim.SetTrigger(AttackHash);
     }
 
     // Animation Event: g?i ?úng frame trúng ?òn (AOE)
@@ -47,19 +49,36 @@ public class Player_Attack : MonoBehaviour
         Vector2 hitPos = (Vector2)transform.position + new Vector2(facingDir.x * attackRange, 0f);
         Collider2D[] hits = Physics2D.OverlapCircleAll(hitPos, hitRadius);
 
-        var damaged = new System.Collections.Generic.HashSet<Enemy_Health>();
+        HashSet<Transform> damagedRoots = new HashSet<Transform>();
 
         for (int i = 0; i < hits.Length; i++)
         {
-            // ? B? qua trigger (vòng detect c?a zombie)
+            if (hits[i] == null) continue;
+
+            // B? qua trigger (ví d? detect zone)
             if (hits[i].isTrigger) continue;
 
             Transform root = hits[i].transform.root;
+            if (root == null) continue;
+
             if (!root.CompareTag(enemyTag)) continue;
 
-            Enemy_Health hp = root.GetComponent<Enemy_Health>();
-            if (hp != null && damaged.Add(hp))
-                hp.TakeDamage(damage);
+            // Tránh gây damage 2 l?n cho cùng 1 enemy trong 1 nhát
+            if (!damagedRoots.Add(root)) continue;
+
+            Enemy_Health enemyHp = root.GetComponent<Enemy_Health>();
+            if (enemyHp != null)
+            {
+                enemyHp.TakeDamage(damage);
+                continue;
+            }
+
+            BossHealth bossHp = root.GetComponent<BossHealth>();
+            if (bossHp != null)
+            {
+                bossHp.TakeDamage(damage);
+                continue;
+            }
         }
     }
 
