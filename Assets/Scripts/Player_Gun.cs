@@ -21,7 +21,8 @@ public class Player_Gun : MonoBehaviour
     [SerializeField] private float shootVisualDuration = 0.12f;
 
     [Header("Bullet Spawn")]
-    [SerializeField] private Transform firePoint;
+    [SerializeField] private Transform firePointDown;
+    [SerializeField] private Transform firePointSide;
     [SerializeField] private GameObject bulletPrefab;
 
     private float lastFireTime;
@@ -97,6 +98,9 @@ public class Player_Gun : MonoBehaviour
 
         Vector2 dir = playerMovement != null ? playerMovement.LastMoveDirection : Vector2.down;
 
+        if (dir == Vector2.zero)
+            dir = Vector2.down;
+
         if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
         {
             gunOverlayRenderer.sprite = shootSideSprite;
@@ -126,22 +130,80 @@ public class Player_Gun : MonoBehaviour
 
     private void SpawnBullet()
     {
-        if (bulletPrefab == null || firePoint == null) return;
+        Debug.Log("SpawnBullet called");
 
-        GameObject bulletObj = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
-        Bullet bullet = bulletObj.GetComponent<Bullet>();
-        if (bullet == null) return;
+        if (bulletPrefab == null)
+        {
+            Debug.LogWarning("bulletPrefab is NULL!");
+            return;
+        }
 
         Vector2 dir = playerMovement != null ? playerMovement.LastMoveDirection : Vector2.down;
 
         if (dir == Vector2.zero)
             dir = Vector2.down;
 
-        bullet.Launch(dir);
-    }
+        Debug.Log($"Shoot dir = {dir}");
 
+        Vector3 spawnPos;
+
+        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
+        {
+            if (firePointSide == null)
+            {
+                Debug.LogWarning("firePointSide is NULL!");
+                return;
+            }
+
+            if (dir.x > 0f)
+            {
+                spawnPos = firePointSide.position;
+            }
+            else
+            {
+                Vector3 localOffset = firePointSide.localPosition;
+                spawnPos = transform.TransformPoint(new Vector3(-localOffset.x, localOffset.y, localOffset.z));
+            }
+        }
+        else
+        {
+            if (firePointDown == null)
+            {
+                Debug.LogWarning("firePointDown is NULL!");
+                return;
+            }
+
+            spawnPos = firePointDown.position;
+        }
+
+        Debug.Log($"Spawn position = {spawnPos}");
+
+        GameObject bulletObj = Instantiate(bulletPrefab, spawnPos, Quaternion.identity);
+        Debug.Log("Bullet instantiated: " + bulletObj.name);
+
+        Bullet bullet = bulletObj.GetComponent<Bullet>();
+        if (bullet == null)
+        {
+            Debug.LogWarning("Bullet script is missing on prefab!");
+            return;
+        }
+
+        bullet.Launch(dir);
+        Debug.Log("Bullet launched");
+    }
     private void NotifyAmmoChanged()
     {
         OnAmmoChanged?.Invoke(currentAmmo, reserveAmmo);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+
+        if (firePointDown != null)
+            Gizmos.DrawSphere(firePointDown.position, 0.05f);
+
+        if (firePointSide != null)
+            Gizmos.DrawSphere(firePointSide.position, 0.05f);
     }
 }

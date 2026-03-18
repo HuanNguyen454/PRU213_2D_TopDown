@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    [SerializeField] private float speed = 10f;
+    [SerializeField] private float speed = 5f;
     [SerializeField] private float lifeTime = 10f;
     [SerializeField] private int damage = 10;
 
@@ -24,6 +24,23 @@ public class Bullet : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.isTrigger) return;
+        if (other.CompareTag("Player")) return;
+
+        BossHealth boss = other.GetComponent<BossHealth>();
+        if (boss != null)
+        {
+            boss.TakeDamage(damage);
+            Destroy(gameObject);
+            return;
+        }
+
+        Enemy_Health enemy = other.GetComponent<Enemy_Health>();
+        if (enemy != null)
+        {
+            enemy.TakeDamage(damage);
+            Destroy(gameObject);
+            return;
+        }
 
         Destroy(gameObject);
     }
