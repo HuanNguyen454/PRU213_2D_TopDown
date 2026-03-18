@@ -22,6 +22,11 @@ public class SaveManager : MonoBehaviour
 
         data.currentScene = SceneManager.GetActiveScene().name;
 
+        if (CompanionManager.Instance != null)
+        {
+            data.isDogUnlocked = CompanionManager.Instance.isUnlocked;
+        }
+
         string json = JsonUtility.ToJson(data, true);
 
         File.WriteAllText(savePath, json);

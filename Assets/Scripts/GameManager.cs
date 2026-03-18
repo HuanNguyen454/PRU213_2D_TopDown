@@ -81,6 +81,11 @@ public class GameManager : MonoBehaviour
         // Apply HP: cách t?t nh?t là SetHP tr?c ti?p (mình thêm hàm TrySetHP)
         TrySetHP(p, data.playerHP);
 
+        if (CompanionManager.Instance != null)
+        {
+            CompanionManager.Instance.isUnlocked = data.isDogUnlocked;
+        }
+
         BindCameraToPlayer();
     }
 

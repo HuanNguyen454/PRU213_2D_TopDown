@@ -10,4 +10,5 @@ public class GameData
     public float playerPosY;
 
     public string currentScene;
+    public bool isDogUnlocked;
 }
