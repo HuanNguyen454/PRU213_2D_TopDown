@@ -11,4 +11,5 @@ public class GameData
 
     public string currentScene;
     public bool isDogUnlocked;
+    public string lastPortalID;
 }

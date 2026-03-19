@@ -8,7 +8,6 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    // UI s? nghe event này ?? l?y Player_Health m?i
     public event Action<Player_Health> OnPlayerSpawned;
 
     [Header("References")]
@@ -18,8 +17,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private string playerTag = "Player";
 
-    // Player hi?n t?i (???c gi? ?? UI/camera d? truy c?p)
     private Player_Health currentPlayer;
+    private bool isLoadingFromSave = false;
+    // NEW: lÆ°u portal ID táº¡m thá»i khi chuyá»ƒn scene
+    private string pendingPortalID = "";
 
     private void Awake()
     {
@@ -28,6 +29,7 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
@@ -40,18 +42,72 @@ public class GameManager : MonoBehaviour
             SceneManager.sceneLoaded -= HandleSceneLoaded;
     }
 
-    // M?i khi load scene xong -> ??m b?o có Player và b?n event cho UI
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         EnsurePlayerExists();
+
+        // Ä‘áº·t vá»‹ trÃ­ theo portal náº¿u cÃ³
+        StartCoroutine(HandleSpawnAfterLoad());
+
         BindCameraToPlayer();
     }
+
+    private IEnumerator HandleSpawnAfterLoad()
+    {
+        yield return null;
+
+        var p = GetCurrentPlayer();
+        if (p == null) yield break;
+
+        // náº¿u cÃ³ portal â†’ spawn theo portal
+        if (!string.IsNullOrEmpty(pendingPortalID))
+        {
+            var spawnPoints = FindObjectsOfType<SpawnPoint>();
+
+            foreach (var sp in spawnPoints)
+            {
+                if (sp.portalID == pendingPortalID)
+                {
+                    p.transform.position = sp.transform.position;
+                    pendingPortalID = "";
+                    yield break;
+                }
+            }
+        }
+
+        // chá»‰ load save khi thá»±c sá»± load game
+        if (isLoadingFromSave && saveManager != null)
+        {
+            GameData data = saveManager.LoadGame();
+            if (data != null)
+            {
+                p.transform.position = new Vector2(data.playerPosX, data.playerPosY);
+                TrySetHP(p, data.playerHP);
+            }
+
+            isLoadingFromSave = false; // reset
+        }
+    }
+
+    // =============================
+    // SAVE / LOAD
+    // =============================
 
     public void SaveGame()
     {
         var p = GetCurrentPlayer();
         if (p == null || saveManager == null) return;
 
+        saveManager.SaveGame(p);
+    }
+
+    // NEW: save kÃ¨m portal
+    public void SaveGameWithPortal(string portalID)
+    {
+        var p = GetCurrentPlayer();
+        if (p == null || saveManager == null) return;
+
+        pendingPortalID = portalID;
         saveManager.SaveGame(p);
     }
 
@@ -62,44 +118,23 @@ public class GameManager : MonoBehaviour
         GameData data = saveManager.LoadGame();
         if (data == null) return;
 
-        // Load scene theo save
+        isLoadingFromSave = true; // âœ… Ä‘Ã¡nh dáº¥u
+
         SceneManager.LoadScene(data.currentScene);
-
-        // Sau khi scene load xong 1 frame thì apply data
-        StartCoroutine(ApplyLoadedDataNextFrame(data));
     }
 
-    private IEnumerator ApplyLoadedDataNextFrame(GameData data)
-    {
-        yield return null;
+    // =============================
+    // PLAYER
+    // =============================
 
-        var p = EnsurePlayerExists();
-
-        // Apply v? trí
-        p.transform.position = new Vector2(data.playerPosX, data.playerPosY);
-
-        // Apply HP: cách t?t nh?t là SetHP tr?c ti?p (mình thêm hàm TrySetHP)
-        TrySetHP(p, data.playerHP);
-
-        if (CompanionManager.Instance != null)
-        {
-            CompanionManager.Instance.isUnlocked = data.isDogUnlocked;
-        }
-
-        BindCameraToPlayer();
-    }
-
-    // ??m b?o luôn có player trong scene
     public Player_Health EnsurePlayerExists()
     {
-        // N?u currentPlayer còn s?ng và ?ang active -> dùng luôn
         if (currentPlayer != null && currentPlayer.gameObject != null && currentPlayer.gameObject.activeInHierarchy)
         {
             NotifyPlayerSpawned(currentPlayer);
             return currentPlayer;
         }
 
-        // Tìm Player trong scene theo tag (phòng khi player ???c spawn b?i script khác)
         GameObject found = GameObject.FindGameObjectWithTag(playerTag);
         if (found != null)
         {
@@ -108,7 +143,6 @@ public class GameManager : MonoBehaviour
             return currentPlayer;
         }
 
-        // Không th?y -> spawn m?i
         if (playerPrefab == null)
         {
             Debug.LogError("GameManager: playerPrefab is NULL!");
@@ -116,7 +150,8 @@ public class GameManager : MonoBehaviour
         }
 
         GameObject obj = Instantiate(playerPrefab);
-        obj.tag = playerTag; // ??m b?o tag ?úng
+        obj.tag = playerTag;
+
         currentPlayer = obj.GetComponent<Player_Health>();
 
         if (currentPlayer == null)
@@ -159,16 +194,20 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // An toàn h?n TakeDamage âm/d??ng: ?u tiên Set tr?c ti?p n?u b?n có th? s?a Player_Health
     private void TrySetHP(Player_Health p, int hpValue)
     {
-        // Cách 1: n?u b?n cho phép thêm hàm SetHP(int) trong Player_Health thì g?i tr?c ti?p:
-        // p.SetHP(hpValue);
-
-        // Cách 2 (không s?a Player_Health): dùng TakeDamage/Heal theo chênh l?ch
         int diff = p.CurrentHP - hpValue;
         if (diff > 0) p.TakeDamage(diff);
         else if (diff < 0) p.Heal(-diff);
+    }
+
+    public void ResetPlayer()
+    {
+        if (currentPlayer != null)
+        {
+            Destroy(currentPlayer.gameObject);
+            currentPlayer = null;
+        }
     }
 
     private void OnApplicationQuit()
