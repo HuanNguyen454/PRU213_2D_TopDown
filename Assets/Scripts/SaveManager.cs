@@ -11,16 +11,17 @@ public class SaveManager : MonoBehaviour
         savePath = Application.persistentDataPath + "/save.json";
     }
 
-    public void SaveGame(Player_Health player)
+    public void SaveGame(Player_Health player, string portalID = "")
     {
         GameData data = new GameData();
 
         data.playerHP = player.CurrentHP;
-
         data.playerPosX = player.transform.position.x;
         data.playerPosY = player.transform.position.y;
 
         data.currentScene = SceneManager.GetActiveScene().name;
+
+        data.lastPortalID = portalID; // QUAN TRỌNG
 
         if (CompanionManager.Instance != null)
         {
@@ -28,10 +29,7 @@ public class SaveManager : MonoBehaviour
         }
 
         string json = JsonUtility.ToJson(data, true);
-
         File.WriteAllText(savePath, json);
-
-        Debug.Log("Game saved to: " + savePath);
     }
 
     public GameData LoadGame()
