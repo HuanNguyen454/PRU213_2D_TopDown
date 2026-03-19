@@ -50,8 +50,17 @@ public class GameManager : MonoBehaviour
         StartCoroutine(HandleSpawnAfterLoad());
 
         BindCameraToPlayer();
+        StartCoroutine(FadeInAfterLoad());
     }
+    private IEnumerator FadeInAfterLoad()
+    {
+        yield return null;
 
+        if (FadeManager.Instance != null)
+        {
+            yield return FadeManager.Instance.FadeIn();
+        }
+    }
     private IEnumerator HandleSpawnAfterLoad()
     {
         yield return null;
