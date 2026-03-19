@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -18,9 +19,16 @@ public class LevelExit : MonoBehaviour
 
         isLoading = true;
 
+        StartCoroutine(LoadWithFade());
+    }
+
+    private IEnumerator LoadWithFade()
+    {
         Time.timeScale = 1f;
 
-        // QUAN TRỌNG: dùng portal system
+        yield return FadeManager.Instance.FadeOutWithLoading();
+      
+
         GameManager.Instance.SaveGameWithPortal(targetPortalID);
 
         SceneManager.LoadScene(nextSceneName);
