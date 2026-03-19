@@ -99,6 +99,11 @@ public class CompanionCombat : MonoBehaviour
         if (anim != null) anim.SetBool(IsAttackingHash, enemyNear);
     }
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip[] attackSounds; // Sử dụng mảng để chứa nhiều file âm thanh
+    private int lastSoundIndex = -1; // Để theo dõi âm thanh vừa phát
+
     private void StartAttack()
     {
         // Nếu dùng Trigger attack riêng:
@@ -108,13 +113,17 @@ public class CompanionCombat : MonoBehaviour
     // Animation Event gọi ở frame cắn
     public void AnimEvent_DealDamage()
     {
+        PlayAttackSound();
+
         if (currentTarget == null) return;
 
-        Vector2 facingDir = Vector2.right;
-        if (sr != null && sr.flipX) facingDir = Vector2.left;
+        // 1. Tính toán hướng từ con chó đến mục tiêu hiện tại
+        Vector2 directionToEnemy = (currentTarget.position - transform.position).normalized;
 
-        Vector2 hitPos = (Vector2)transform.position + new Vector2(facingDir.x * attackRange, 0f);
+        // 2. Điểm gây sát thương (hitPos) sẽ nằm theo hướng đó, cách con chó 1 khoảng attackRange
+        Vector3 hitPos = transform.position + (Vector3)(directionToEnemy * attackRange);
 
+        // 3. Quét vòng tròn sát thương tại vị trí mới này
         Collider2D[] hits = Physics2D.OverlapCircleAll(hitPos, hitRadius);
         var damaged = new HashSet<Enemy_Health>();
 
@@ -129,8 +138,36 @@ public class CompanionCombat : MonoBehaviour
             if (hp != null && damaged.Add(hp))
             {
                 hp.TakeDamage(damage);
+                Debug.Log("Companion hit: " + root.name);
             }
         }
+    }
+
+    private void PlayAttackSound()
+    {
+        if (audioSource == null || attackSounds == null || attackSounds.Length == 0) return;
+
+        int randomIndex;
+
+        // Logic để không phát trùng 1 âm thanh 2 lần liên tiếp (xen kẽ)
+        if (attackSounds.Length > 1)
+        {
+            do
+            {
+                randomIndex = Random.Range(0, attackSounds.Length);
+            } while (randomIndex == lastSoundIndex);
+        }
+        else
+        {
+            randomIndex = 0;
+        }
+
+        lastSoundIndex = randomIndex;
+
+        // Thay đổi pitch một chút để âm thanh tự nhiên hơn (tùy chọn)
+        audioSource.pitch = Random.Range(0.9f, 1.1f);
+
+        audioSource.PlayOneShot(attackSounds[randomIndex]);
     }
 
     private void OnDrawGizmosSelected()
