@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -22,6 +22,25 @@ public class Player_Movement : MonoBehaviour
     private Vector2 lastCardinalDir = Vector2.down;
 
     public Vector2 LastMoveDirection => lastCardinalDir;
+
+    // ✅ PROPERTY CHO SCRIPT KHÁC DÙNG
+    public float MoveSpeed
+    {
+        get => moveSpeed;
+        set => moveSpeed = value;
+    }
+
+    // ✅ FUNCTION TĂNG TỐC
+    public void AddSpeed(float amount)
+    {
+        moveSpeed += amount;
+    }
+
+    // ✅ RESET TỐC ĐỘ
+    public void ResetSpeed(float originalSpeed)
+    {
+        moveSpeed = originalSpeed;
+    }
 
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
     private static readonly int MoveXHash = Animator.StringToHash("MoveX");
@@ -66,7 +85,6 @@ public class Player_Movement : MonoBehaviour
         if (anim != null)
         {
             anim.SetBool(IsMovingHash, isMoving);
-
             anim.SetFloat(MoveXHash, dir.x);
             anim.SetFloat(MoveYHash, dir.y);
 
