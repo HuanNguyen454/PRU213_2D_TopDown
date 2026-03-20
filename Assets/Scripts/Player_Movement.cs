@@ -23,20 +23,20 @@ public class Player_Movement : MonoBehaviour
 
     public Vector2 LastMoveDirection => lastCardinalDir;
 
-    //  PROPERTY CHO SCRIPT KHÁC DÙNG
+    // ✅ PROPERTY CHO SCRIPT KHÁC DÙNG
     public float MoveSpeed
     {
         get => moveSpeed;
         set => moveSpeed = value;
     }
 
-    // FUNCTION TĂNG TỐC
+    // ✅ FUNCTION TĂNG TỐC
     public void AddSpeed(float amount)
     {
         moveSpeed += amount;
     }
 
-    // RESET TỐC ĐỘ
+    // ✅ RESET TỐC ĐỘ
     public void ResetSpeed(float originalSpeed)
     {
         moveSpeed = originalSpeed;
@@ -128,6 +128,26 @@ public class Player_Movement : MonoBehaviour
             if (moveAudioSource.isPlaying)
                 moveAudioSource.Stop();
         }
+    }
+    // THÊM VÀO CLASS
+    public void StartSpeedBoost(float amount, float duration)
+    {
+        StartCoroutine(BoostSpeed(amount, duration));
+    }
+
+    private IEnumerator BoostSpeed(float amount, float duration)
+    {
+        float originalSpeed = moveSpeed;
+
+        moveSpeed += amount;
+
+        Debug.Log("Speed +" + amount);
+
+        yield return new WaitForSeconds(duration);
+
+        moveSpeed = originalSpeed;
+
+        Debug.Log("Speed reset");
     }
 
 }
