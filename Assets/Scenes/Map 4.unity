@@ -497,9 +497,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 2218475206468324066, guid: d52821fc2fbee08458862892fd7e5388, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 786630534}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d52821fc2fbee08458862892fd7e5388, type: 3}
+--- !u!4 &337809554 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2218475206468324066, guid: d52821fc2fbee08458862892fd7e5388, type: 3}
+  m_PrefabInstance: {fileID: 337809553}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &443323729
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,11 +866,11 @@ Transform:
   m_GameObject: {fileID: 786630533}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -11.684814, y: -10.773346, z: -3.0580008}
+  m_LocalPosition: {x: -464.32, y: -237.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 337809554}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!60 &786630535
 PolygonCollider2D:
@@ -27767,4 +27775,3 @@ SceneRoots:
   - {fileID: 987656055}
   - {fileID: 566080021}
   - {fileID: 1658318136}
-  - {fileID: 786630534}
