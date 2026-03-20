@@ -2777,7 +2777,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nextSceneName: Map 2
   playerTag: Player
-  targetPortalID: 
+  targetPortalID: From_Map1_To_Map2
 --- !u!212 &913007843
 SpriteRenderer:
   m_ObjectHideFlags: 0
