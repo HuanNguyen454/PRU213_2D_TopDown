@@ -1,40 +1,56 @@
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Collections;
 using UnityEngine;
 
 public class FoodSpawner : MonoBehaviour
 {
     public GameObject foodPrefab;
 
+    [Header("Spawn Area")]
     public float minX = -8f;
     public float maxX = 8f;
     public float minY = -4f;
     public float maxY = 4f;
 
+    [Header("Spawn Setting")]
+    public float spawnDelay = 5f;   // thời gian spawn
+    public int maxFood = 10;        // số item tối đa trên map
+
+    private List<GameObject> foods = new List<GameObject>();
+
     void Start()
     {
-        StartCoroutine(SpawnFoodFlow());
+        StartCoroutine(SpawnLoop());
     }
 
-    IEnumerator SpawnFoodFlow()
+    IEnumerator SpawnLoop()
     {
-        yield return new WaitForSeconds(10f);
-        SpawnFood();
+        while (true)
+        {
+            yield return new WaitForSeconds(spawnDelay);
 
-        yield return new WaitForSeconds(10f);
-        SpawnFood();
+            // Xóa item đã bị ăn (null)
+            foods.RemoveAll(f => f == null);
 
-        yield return new WaitForSeconds(10f);
-        SpawnFood();
+            // Nếu chưa đủ số lượng → spawn thêm
+            if (foods.Count < maxFood)
+            {
+                SpawnFood();
+            }
+        }
     }
 
     void SpawnFood()
     {
-        float randomX = Random.Range(minX, maxX);
-        float randomY = Random.Range(minY, maxY);
+        float x = Random.Range(minX, maxX);
+        float y = Random.Range(minY, maxY);
 
-        Vector2 spawnPosition = new Vector2(randomX, randomY);
+        Vector2 pos = new Vector2(x, y);
 
-        Instantiate(foodPrefab, spawnPosition, Quaternion.identity);
+        GameObject food = Instantiate(foodPrefab, pos, Quaternion.identity);
+
+        foods.Add(food);
+
+        Debug.Log("Spawn thêm item");
     }
 }

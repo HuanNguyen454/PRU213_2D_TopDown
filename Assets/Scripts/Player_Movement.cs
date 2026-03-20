@@ -129,5 +129,25 @@ public class Player_Movement : MonoBehaviour
                 moveAudioSource.Stop();
         }
     }
+    // THÊM VÀO CLASS
+    public void StartSpeedBoost(float amount, float duration)
+    {
+        StartCoroutine(BoostSpeed(amount, duration));
+    }
+
+    private IEnumerator BoostSpeed(float amount, float duration)
+    {
+        float originalSpeed = moveSpeed;
+
+        moveSpeed += amount;
+
+        Debug.Log("Speed +" + amount);
+
+        yield return new WaitForSeconds(duration);
+
+        moveSpeed = originalSpeed;
+
+        Debug.Log("Speed reset");
+    }
 
 }

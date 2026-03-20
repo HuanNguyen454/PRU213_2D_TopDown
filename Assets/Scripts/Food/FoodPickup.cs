@@ -63,24 +63,9 @@ public class FoodPickup : MonoBehaviour
         // ⚡ SPEED
         if (currentData.speedBoost > 0 && movement != null)
         {
-            StartCoroutine(BoostSpeed(movement, currentData.speedBoost, currentData.duration));
+            movement.StartSpeedBoost(currentData.speedBoost, currentData.duration);
         }
 
         Destroy(gameObject);
-    }
-
-    IEnumerator BoostSpeed(Player_Movement movement, float amount, float duration)
-    {
-        float originalSpeed = movement.MoveSpeed;
-
-        movement.AddSpeed(amount);
-
-        Debug.Log("Speed +" + amount);
-
-        yield return new WaitForSeconds(duration);
-
-        movement.ResetSpeed(originalSpeed);
-
-        Debug.Log("Speed reset");
     }
 }
