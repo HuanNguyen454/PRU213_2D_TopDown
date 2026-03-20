@@ -36,23 +36,62 @@ public class CompanionManager : MonoBehaviour
 
     private System.Collections.IEnumerator SpawnOrRepositionRoutine()
     {
-        yield return null; // Chờ Player xuất hiện
+        // 1. Tìm Player (Đợi tối đa 10 frame nếu chưa thấy)
+        GameObject playerObj = null;
+        int retryCount = 0;
+        while (playerObj == null && retryCount < 10)
+        {
+            yield return null; // Chờ frame tiếp theo
+            var playerHealth = GameManager.Instance.GetCurrentPlayer();
+            if (playerHealth != null) playerObj = playerHealth.gameObject;
+            retryCount++;
+        }
 
-        // Lấy Player từ GameManager của bạn
-        var player = GameManager.Instance.GetCurrentPlayer();
-        if (player == null) yield break;
+        if (playerObj == null)
+        {
+            Debug.LogWarning("CompanionManager: Không tìm thấy Player sau khi load cảnh!");
+            yield break;
+        }
 
-        Vector3 spawnPos = player.transform.position;
-
+        // 2. Spawn hoặc Lấy con chó hiện tại
         if (activeDog == null)
         {
-            activeDog = Instantiate(dogPrefab, spawnPos, Quaternion.identity);
+            activeDog = Instantiate(dogPrefab, playerObj.transform.position, Quaternion.identity);
             DontDestroyOnLoad(activeDog);
         }
         else
         {
-            activeDog.transform.position = spawnPos;
+            // Nếu chó đã có, đảm bảo nó được bật lên
             activeDog.SetActive(true);
+        }
+
+        // 3. GIẢI PHÁP: Ép chó bám đuôi Player trong 5 frame đầu tiên 🔥
+        // Việc này đảm bảo dù Player có bị GameManager dịch chuyển đi đâu (đến Portal),
+        // con chó cũng sẽ đi theo ngay lập tức, không bị "bỏ rơi".
+        int followFrames = 5;
+        while (followFrames > 0)
+        {
+            if (activeDog != null && playerObj != null)
+            {
+                // Dịch chuyển chó đến vị trí Player ngay lập tức
+                activeDog.transform.position = playerObj.transform.position;
+
+                // Tạm thời tắt script Follow để tránh xung đột vật lý
+                var followScript = activeDog.GetComponent<CompanionFollow>();
+                if (followScript != null) followScript.enabled = false;
+            }
+
+            yield return null; // Chờ frame tiếp theo
+            followFrames--;
+        }
+
+        // 4. Bật lại script Follow sau khi đã ổn định vị trí
+        if (activeDog != null)
+        {
+            var followScript = activeDog.GetComponent<CompanionFollow>();
+            if (followScript != null) followScript.enabled = true;
+
+            Debug.Log("CompanionManager: Đã ổn định vị trí chó tại Scene mới.");
         }
     }
 
