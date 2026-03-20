@@ -54,11 +54,17 @@ public class GameManager : MonoBehaviour
     }
     private IEnumerator FadeInAfterLoad()
     {
+        Debug.Log("FADE IN START");
+
         yield return null;
 
         if (FadeManager.Instance != null)
         {
             yield return FadeManager.Instance.FadeIn();
+        }
+        else
+        {
+            Debug.LogError("FadeManager NULL");
         }
     }
     private IEnumerator HandleSpawnAfterLoad()
