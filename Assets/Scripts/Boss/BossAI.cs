@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,20 +9,20 @@ public class BossAI : MonoBehaviour
     [SerializeField] private CircleCollider2D detectCollider; // MUST be Is Trigger
 
     [Header("Origin (Optional)")]
-    [SerializeField] private Transform attackOrigin; // n?u ?? tr?ng s? d�ng rb.position
+    [SerializeField] private Transform attackOrigin; // n?u ?? tr?ng s? dùng rb.position
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 2.0f;
     [SerializeField] private float stopDistance = 0.6f;
 
     [Header("Melee Attack")]
-    [SerializeField] private float meleeRange = 2.5f;        // ?i?u ki?n b?t ??u ?�nh
-    [SerializeField] private float meleeHitOffset = 1.0f;    // t�m hitbox ??t tr??c m?t
+    [SerializeField] private float meleeRange = 2.5f;        // ?i?u ki?n b?t ??u ?ánh
+    [SerializeField] private float meleeHitOffset = 1.0f;    // tâm hitbox ??t tr??c m?t
     [SerializeField] private float attackCooldown = 0.8f;
     [SerializeField] private float meleeWindup = 0.25f;
 
     [Header("Throw Axe (Second Attack)")]
-    [SerializeField] private float throwMinDistance = 3.5f;  // ch? n�m khi player ?? xa
+    [SerializeField] private float throwMinDistance = 3.5f;  // ch? ném khi player ?? xa
     [SerializeField] private float throwMaxDistance = 9.0f;
     [SerializeField] private float throwWindup = 0.35f;
 
@@ -94,7 +94,7 @@ public class BossAI : MonoBehaviour
             return;
         }
 
-        // Kh�ng c� target
+        // Không có target
         if (!isChasing || target == null)
         {
             StopMove();
@@ -102,7 +102,7 @@ public class BossAI : MonoBehaviour
             return;
         }
 
-        // ?ang ?�nh => ??ng y�n
+        // ?ang ?ánh => ??ng yên
         if (isAttacking)
         {
             StopMove();
@@ -115,7 +115,7 @@ public class BossAI : MonoBehaviour
 
         UpdateFacing(toTarget);
 
-        // 1) N�m r�u khi pendingSecond v� player ?? xa
+        // 1) Ném rìu khi pendingSecond và player ?? xa
         if (pendingSecond && dist >= throwMinDistance && dist <= throwMaxDistance)
         {
             StopMove();
@@ -175,7 +175,7 @@ public class BossAI : MonoBehaviour
             ResetWindup();
         }
 
-        // 3) Chase (d�ng origin ?? t�nh dir ?n ??nh)
+        // 3) Chase (dùng origin ?? tính dir ?n ??nh)
         if (dist <= stopDistance)
         {
             StopMove();
@@ -189,7 +189,7 @@ public class BossAI : MonoBehaviour
 
     private void StartAttack(bool isSecond)
     {
-        lockedFacingX = facingDir.x; // kh�a h??ng m?t t?i th?i ?i?m ra ?�n
+        lockedFacingX = facingDir.x; // khóa h??ng m?t t?i th?i ?i?m ra ?òn
 
         isAttacking = true;
         nextAttackTime = Time.time + attackCooldown;
@@ -225,7 +225,7 @@ public class BossAI : MonoBehaviour
 
     // ===== Animation Events =====
 
-    // AOE tr??c m?t (player ??ng sau l?ng kh�ng ?n)
+    // AOE tr??c m?t (player ??ng sau l?ng không ?n)
     public void AnimEvent_FirstAttackDealDamage()
     {
         Vector2 origin = OriginPos;
@@ -238,7 +238,7 @@ public class BossAI : MonoBehaviour
         if (ph != null) ph.TakeDamage(firstAttackDamage);
     }
 
-    // G?n event v�o clip Second_Attack_Boss t?i frame n�m
+    // G?n event vào clip Second_Attack_Boss t?i frame ném
     public void AnimEvent_SpawnAxe()
     {
         if (axePrefab == null) return;
@@ -247,7 +247,7 @@ public class BossAI : MonoBehaviour
 
         if (axeSpawnPoint != null)
         {
-            // Mirror spawnpoint theo h??ng m?t (v� child kh�ng t? flip)
+            // Mirror spawnpoint theo h??ng m?t (vì child không t? flip)
             Vector3 local = axeSpawnPoint.localPosition;
             float lx = Mathf.Abs(local.x) * lockedFacingX;
             spawnPos = transform.TransformPoint(new Vector3(lx, local.y, local.z));
@@ -298,5 +298,22 @@ public class BossAI : MonoBehaviour
 
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(origin, throwMinDistance);
+    }
+    public void OnBossDead()
+    {
+        StopMove();
+
+        // 1. Kích hoạt trigger chết
+        anim.SetTrigger(DieHash);
+
+        // 2. Tắt các Bool khác để tránh xung đột logic
+        anim.SetBool("IsRunning", false);
+        // Nếu bạn có các bool khác như IsAttacking, hãy tắt hết ở đây
+
+        // 3. VÔ HIỆU HÓA HOÀN TOÀN AI
+        this.enabled = false;
+
+        // Mẹo: Tắt Animator sau 0.1s nếu nó vẫn cứng đầu quay về Idle
+        // Hoặc đơn giản là để clip Dead KHÔNG nối đi đâu cả (không có Exit Time)
     }
 }
