@@ -45,7 +45,7 @@ public class CompanionCombat : MonoBehaviour
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, detectRadius);
         float bestDist = Mathf.Infinity;
         Transform bestTarget = null;
- 
+
         foreach (var col in hits)
         {
             if (col.isTrigger) continue;
@@ -53,14 +53,21 @@ public class CompanionCombat : MonoBehaviour
             Transform root = col.transform.root;
             if (!root.CompareTag(enemyTag)) continue;
 
+            // --- ĐOẠN QUAN TRỌNG: Chỉ chọn mục tiêu CÒN SỐNG ---
+            BossHealth h = root.GetComponent<BossHealth>();
+            if (h != null && h.IsDead) continue;
+
+            Enemy_Health eh = root.GetComponent<Enemy_Health>();
+            if (eh != null && eh.IsDead) continue;
+            // -----------------------------------------------
+
             float d = Vector2.Distance(transform.position, root.position);
             if (d < bestDist)
             {
                 bestDist = d;
                 bestTarget = root;
             }
-        }   
-
+        }
         currentTarget = bestTarget;
 
         if (follow != null)
@@ -76,6 +83,15 @@ public class CompanionCombat : MonoBehaviour
 
         if (currentTarget != null)
         {
+            // Kiểm tra xem mục tiêu có script BossHealth và đã chết chưa
+            BossHealth targetHealth = currentTarget.GetComponent<BossHealth>();
+            if (targetHealth != null && targetHealth.IsDead)
+            {
+                currentTarget = null; // Bỏ mục tiêu nếu nó đã chết
+                if (follow != null) follow.ClearCombatTarget();
+                return;
+            }
+
             float distToEnemy = Vector2.Distance(transform.position, currentTarget.position);
 
             if (distToEnemy > detectRadius * 1.5f || !currentTarget.gameObject.activeInHierarchy)
@@ -117,15 +133,13 @@ public class CompanionCombat : MonoBehaviour
 
         if (currentTarget == null) return;
 
-        // 1. Tính toán hướng từ con chó đến mục tiêu hiện tại
         Vector2 directionToEnemy = (currentTarget.position - transform.position).normalized;
-
-        // 2. Điểm gây sát thương (hitPos) sẽ nằm theo hướng đó, cách con chó 1 khoảng attackRange
         Vector3 hitPos = transform.position + (Vector3)(directionToEnemy * attackRange);
 
-        // 3. Quét vòng tròn sát thương tại vị trí mới này
         Collider2D[] hits = Physics2D.OverlapCircleAll(hitPos, hitRadius);
-        var damaged = new HashSet<Enemy_Health>();
+
+        // Tạo danh sách để không gây sát thương trùng lặp trong 1 nhát cắn
+        var damagedRoots = new HashSet<Transform>();
 
         foreach (var col in hits)
         {
@@ -134,11 +148,24 @@ public class CompanionCombat : MonoBehaviour
             Transform root = col.transform.root;
             if (!root.CompareTag(enemyTag)) continue;
 
+            // Tránh gây damage 2 lần cho cùng 1 root
+            if (!damagedRoots.Add(root)) continue;
+
+            // 1. Kiểm tra máu quái thường
             Enemy_Health hp = root.GetComponent<Enemy_Health>();
-            if (hp != null && damaged.Add(hp))
+            if (hp != null)
             {
                 hp.TakeDamage(damage);
-                Debug.Log("Companion hit: " + root.name);
+                Debug.Log("Companion hit Enemy: " + root.name);
+                continue; // Đánh trúng rồi thì bỏ qua check dưới
+            }
+
+            // 2. Kiểm tra máu Boss (Thêm đoạn này)
+            BossHealth bossHp = root.GetComponent<BossHealth>();
+            if (bossHp != null)
+            {
+                bossHp.TakeDamage(damage);
+                Debug.Log("Companion hit Boss: " + root.name);
             }
         }
     }

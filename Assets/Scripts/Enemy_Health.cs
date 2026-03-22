@@ -14,6 +14,7 @@ public class Enemy_Health : MonoBehaviour
 
     private Color originalColor;
     private Coroutine flashRoutine;
+    public bool IsDead => currentHP <= 0;
 
     private void Awake()
     {

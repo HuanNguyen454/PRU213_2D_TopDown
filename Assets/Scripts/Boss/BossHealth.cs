@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
 
 public class BossHealth : MonoBehaviour
@@ -15,6 +14,7 @@ public class BossHealth : MonoBehaviour
     private Color originalColor;
     private Coroutine flashRoutine;
 
+    public int CurrentHP => currentHP;
     public bool IsDead => currentHP <= 0;
 
     private void Awake()
@@ -33,22 +33,32 @@ public class BossHealth : MonoBehaviour
         if (IsDead) return;
 
         currentHP -= dmg;
-
         PlayHitFlash();
 
         if (currentHP <= 0)
         {
             currentHP = 0;
+            Die();
         }
+    }
+
+    private void Die()
+    {
+        // Gửi thông báo đến TẤT CẢ các script gắn trên cùng Object này
+        // Con Boss 1 có hàm "OnBossDead" sẽ chạy, Boss 2 có cũng sẽ chạy.
+        SendMessage("OnBossDead", SendMessageOptions.DontRequireReceiver);
+
+        // Vô hiệu hóa Collider để không nhận thêm damage hoặc chặn đường
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null) col.enabled = false;
+
+        Debug.Log(gameObject.name + " đã bị tiêu diệt!");
     }
 
     private void PlayHitFlash()
     {
         if (spriteRenderer == null) return;
-
-        if (flashRoutine != null)
-            StopCoroutine(flashRoutine);
-
+        if (flashRoutine != null) StopCoroutine(flashRoutine);
         flashRoutine = StartCoroutine(HitFlashRoutine());
     }
 
